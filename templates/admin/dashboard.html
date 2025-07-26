@@ -1,0 +1,713 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - FlaskShop{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="fw-bold mb-1">
+                        <i class="fas fa-tachometer-alt me-2 text-primary"></i>Admin Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Welcome back! Here's what's happening with your store.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-plus me-1"></i>Quick Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin_add_product') }}">
+                                <i class="fas fa-plus me-2"></i>Add Product
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-tags me-2"></i>Add Category
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_products') }}">
+                                <i class="fas fa-box me-2"></i>Manage Products
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Total Users Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary text-white rounded-circle me-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="fw-bold mb-0 counter" data-target="{{ stats.total_users if stats else 0 }}">0</h3>
+                                    <p class="text-muted mb-0 small">Total Users</p>
+                                </div>
+                                <span class="badge bg-success">+12%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-primary" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Products Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success text-white rounded-circle me-3">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="fw-bold mb-0 counter" data-target="{{ stats.total_products if stats else 0 }}">0</h3>
+                                    <p class="text-muted mb-0 small">Total Products</p>
+                                </div>
+                                <span class="badge bg-info">+5%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-success" style="width: 85%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Orders Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning text-white rounded-circle me-3">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="fw-bold mb-0 counter" data-target="{{ stats.total_orders if stats else 0 }}">0</h3>
+                                    <p class="text-muted mb-0 small">Total Orders</p>
+                                </div>
+                                <span class="badge bg-warning">+8%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-warning" style="width: 65%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Revenue Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-danger text-white rounded-circle me-3">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="fw-bold mb-0">$<span class="counter" data-target="{{ stats.total_revenue|round|int if stats else 0 }}">0</span></h3>
+                                    <p class="text-muted mb-0 small">Total Revenue</p>
+                                </div>
+                                <span class="badge bg-success">+25%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-danger" style="width: 90%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Orders -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-list-alt me-2 text-primary"></i>Recent Orders
+                        </h5>
+                        <a href="{{ url_for('admin_orders') if 'admin_orders' in url_for.__globals__ else '#' }}" class="btn btn-outline-primary btn-sm">
+                            View All <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0 fw-semibold">Order ID</th>
+                                    <th class="border-0 fw-semibold">Customer</th>
+                                    <th class="border-0 fw-semibold">Amount</th>
+                                    <th class="border-0 fw-semibold">Status</th>
+                                    <th class="border-0 fw-semibold">Date</th>
+                                    <th class="border-0 fw-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td class="fw-bold text-primary">#{{ order.id }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </div>
+                                            {{ order.user.username if order.user else 'Guest' }}
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold">${{ "%.2f"|format(order.total_amount) }}</td>
+                                    <td>
+                                        {% if order.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif order.status == 'confirmed' %}
+                                            <span class="badge bg-info">Confirmed</span>
+                                        {% elif order.status == 'shipped' %}
+                                            <span class="badge bg-primary">Shipped</span>
+                                        {% elif order.status == 'delivered' %}
+                                            <span class="badge bg-success">Delivered</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ order.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted">{{ order.created_at.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View Details</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Update Status</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Cancel</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <h6 class="text-muted">No recent orders</h6>
+                        <p class="text-muted small mb-0">Orders will appear here once customers start buying.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats & Actions -->
+        <div class="col-lg-4">
+            <!-- Sales Chart -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="fas fa-chart-line me-2 text-success"></i>Sales Overview
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Products -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="fas fa-star me-2 text-warning"></i>Top Products
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if top_products %}
+                    <div class="top-products-list">
+                        {% for product in top_products %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="product-rank bg-primary text-white rounded-circle me-3">{{ loop.index }}</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">{{ product.name }}</h6>
+                                <small class="text-muted">{{ product.sales_count if product.sales_count else 0 }} sales</small>
+                            </div>
+                            <div class="text-success fw-bold">${{ "%.2f"|format(product.total_revenue if product.total_revenue else 0) }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- Demo data when no real data available -->
+                    <div class="top-products-list">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="product-rank bg-primary text-white rounded-circle me-3">1</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Sample Product 1</h6>
+                                <small class="text-muted">0 sales</small>
+                            </div>
+                            <div class="text-success fw-bold">$0.00</div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="product-rank bg-secondary text-white rounded-circle me-3">2</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Sample Product 2</h6>
+                                <small class="text-muted">0 sales</small>
+                            </div>
+                            <div class="text-success fw-bold">$0.00</div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="product-rank bg-warning text-white rounded-circle me-3">3</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Sample Product 3</h6>
+                                <small class="text-muted">0 sales</small>
+                            </div>
+                            <div class="text-success fw-bold">$0.00</div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <div class="product-rank bg-info text-white rounded-circle me-3">4</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Sample Product 4</h6>
+                                <small class="text-muted">0 sales</small>
+                            </div>
+                            <div class="text-success fw-bold">$0.00</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Dashboard Widgets -->
+    <div class="row g-4 mt-4">
+        <!-- Low Stock Alert -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Low Stock Alert
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_products %}
+                    <div class="alert alert-warning border-0" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-3"></i>
+                            <div>
+                                <strong>{{ low_stock_products|length }} products</strong> are running low on stock
+                                <br><small>Consider restocking soon to avoid stockouts</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success border-0" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle me-3"></i>
+                            <div>
+                                <strong>All products</strong> are well stocked
+                                <br><small>No immediate restocking needed</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <a href="{{ url_for('admin_products') }}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-eye me-1"></i>View Products
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="fas fa-clock me-2 text-info"></i>Recent Activity
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                    <div class="activity-feed">
+                        {% for activity in recent_activities %}
+                        <div class="activity-item d-flex align-items-start mb-3">
+                            <div class="activity-icon bg-{{ activity.type }} text-white rounded-circle me-3">
+                                <i class="fas fa-{{ activity.icon }}"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 small">{{ activity.description }}</p>
+                                <small class="text-muted">{{ activity.timestamp.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- Demo activity when no real data -->
+                    <div class="activity-feed">
+                        <div class="activity-item d-flex align-items-start mb-3">
+                            <div class="activity-icon bg-success text-white rounded-circle me-3">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 small"><strong>Welcome to FlaskShop!</strong> Your dashboard is ready.</p>
+                                <small class="text-muted">Just now</small>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item d-flex align-items-start mb-3">
+                            <div class="activity-icon bg-primary text-white rounded-circle me-3">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 small"><strong>System initialized:</strong> Database tables created</p>
+                                <small class="text-muted">A moment ago</small>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item d-flex align-items-start">
+                            <div class="activity-icon bg-info text-white rounded-circle me-3">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 small"><strong>Ready to go:</strong> Start adding products and categories</p>
+                                <small class="text-muted">Ready when you are</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="notificationToast" class="toast" role="alert">
+        <div class="toast-header">
+            <i class="fas fa-bell text-primary me-2"></i>
+            <strong class="me-auto">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            <!-- Message will be inserted here -->
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.product-rank {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.activity-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+.card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Counter animation */
+.counter {
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Toast notifications */
+.toast {
+    min-width: 300px;
+}
+
+.toast-success {
+    border-left: 4px solid #28a745;
+}
+
+.toast-error {
+    border-left: 4px solid #dc3545;
+}
+
+.toast-info {
+    border-left: 4px solid #17a2b8;
+}
+
+.toast-warning {
+    border-left: 4px solid #ffc107;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize counters
+    animateCounters();
+    
+    // Initialize sales chart
+    initSalesChart();
+    
+    // Auto-refresh dashboard every 5 minutes
+    setInterval(refreshDashboard, 300000);
+});
+
+// Animate counters
+function animateCounters() {
+    const counters = document.querySelectorAll('.counter');
+    
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target')) || 0;
+        const duration = 2000; // 2 seconds
+        const increment = target / (duration / 16); // 60fps
+        let current = 0;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            counter.textContent = Math.floor(current);
+        }, 16);
+    });
+}
+
+// Initialize sales chart
+function initSalesChart() {
+    const ctx = document.getElementById('salesChart');
+    if (!ctx) return;
+    
+    const canvas = ctx.getContext('2d');
+    const width = ctx.width;
+    const height = ctx.height;
+    
+    // Clear canvas
+    canvas.clearRect(0, 0, width, height);
+    
+    // Demo data points
+    const dataPoints = [20, 45, 30, 80, 60, 90];
+    const maxValue = Math.max(...dataPoints);
+    const stepX = width / (dataPoints.length - 1);
+    
+    // Draw background grid
+    canvas.strokeStyle = '#f0f0f0';
+    canvas.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+        const y = (height * i) / 5;
+        canvas.beginPath();
+        canvas.moveTo(0, y);
+        canvas.lineTo(width, y);
+        canvas.stroke();
+    }
+    
+    // Draw area fill
+    canvas.beginPath();
+    canvas.moveTo(0, height);
+    dataPoints.forEach((point, index) => {
+        const x = index * stepX;
+        const y = height - (point / maxValue) * height;
+        if (index === 0) {
+            canvas.lineTo(x, y);
+        } else {
+            canvas.lineTo(x, y);
+        }
+    });
+    canvas.lineTo(width, height);
+    canvas.closePath();
+    canvas.fillStyle = 'rgba(99, 102, 241, 0.1)';
+    canvas.fill();
+    
+    // Draw line
+    canvas.beginPath();
+    dataPoints.forEach((point, index) => {
+        const x = index * stepX;
+        const y = height - (point / maxValue) * height;
+        if (index === 0) {
+            canvas.moveTo(x, y);
+        } else {
+            canvas.lineTo(x, y);
+        }
+    });
+    canvas.strokeStyle = 'rgb(99, 102, 241)';
+    canvas.lineWidth = 3;
+    canvas.stroke();
+    
+    // Draw data points
+    canvas.fillStyle = 'rgb(99, 102, 241)';
+    dataPoints.forEach((point, index) => {
+        const x = index * stepX;
+        const y = height - (point / maxValue) * height;
+        canvas.beginPath();
+        canvas.arc(x, y, 4, 0, Math.PI * 2);
+        canvas.fill();
+    });
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const toast = document.getElementById('notificationToast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    // Set message and type
+    toastMessage.textContent = message;
+    toast.className = `toast toast-${type}`;
+    
+    // Show toast
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+
+// Refresh dashboard
+function refreshDashboard() {
+    // Show loading indicator
+    const refreshBtn = document.querySelector('[onclick="refreshDashboard()"]');
+    const originalText = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...';
+    refreshBtn.disabled = true;
+    
+    // Simulate refresh
+    setTimeout(() => {
+        // In a real app, you'd fetch new data here
+        showNotification('Dashboard refreshed successfully', 'success');
+        
+        // Restore button
+        refreshBtn.innerHTML = originalText;
+        refreshBtn.disabled = false;
+        
+        // Re-animate counters
+        animateCounters();
+        
+        // Refresh chart
+        initSalesChart();
+    }, 2000);
+}
+
+// Real-time notifications (simulation)
+function simulateRealTimeUpdates() {
+    const notifications = [
+        { message: 'New order received', type: 'success' },
+        { message: 'Product stock updated', type: 'info' },
+        { message: 'New user registered', type: 'info' },
+        { message: 'Payment processed successfully', type: 'success' }
+    ];
+    
+    setInterval(() => {
+        // Only show occasionally to avoid spam
+        if (Math.random() < 0.1) { // 10% chance every interval
+            const randomNotification = notifications[Math.floor(Math.random() * notifications.length)];
+            showNotification(randomNotification.message, randomNotification.type);
+        }
+    }, 30000); // Every 30 seconds
+}
+
+// Start real-time updates simulation
+simulateRealTimeUpdates();
+
+// Handle responsive table
+window.addEventListener('resize', function() {
+    // Add any responsive handling here if needed
+});
+</script>
+{% endblock %}
+            

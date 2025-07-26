@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Login - FlaskShop{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-gradient text-white text-center py-4" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">
+                <h3 class="mb-0">
+                    <i class="fas fa-sign-in-alt me-2"></i>Welcome Back
+                </h3>
+                <p class="mb-0 opacity-75">Sign in to your account</p>
+            </div>
+            
+            <div class="card-body p-4">
+                <form id="loginForm" method="POST">
+                    <div class="mb-4">
+                        <label for="username" class="form-label fw-semibold">
+                            <i class="fas fa-user me-2 text-primary"></i>Username
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">
+                            <i class="fas fa-lock me-2 text-primary"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye" id="passwordIcon"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+                            <label class="form-check-label" for="rememberMe">
+                                Remember me
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+                
+                <div class="text-center">
+                    <a href="#" class="text-decoration-none small">
+                        <i class="fas fa-key me-1"></i>Forgot your password?
+                    </a>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="mb-2 text-muted">Don't have an account?</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Demo Credentials -->
+        <div class="card mt-4 border-0 shadow-sm">
+            <div class="card-body text-center py-3">
+                <h6 class="text-muted mb-2">
+                    <i class="fas fa-info-circle me-2"></i>Demo Credentials
+                </h6>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <button class="btn btn-outline-info btn-sm w-100" onclick="fillDemoCredentials('admin', 'admin123')">
+                            <i class="fas fa-crown me-1"></i>Admin
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-success btn-sm w-100" onclick="fillDemoCredentials('demo', 'demo123')">
+                            <i class="fas fa-user me-1"></i>User
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header.bg-gradient {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header.bg-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+}
+
+.input-group .btn {
+    border-color: #ced4da;
+}
+
+.input-group .form-control:focus + .btn {
+    border-color: var(--primary);
+}
+
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.demo-credentials {
+    background: linear-gradient(135deg, #f8f9ff, #e8f2ff);
+}
+
+@media (max-width: 576px) {
+    .col-md-6.col-lg-4 {
+        padding: 0 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const passwordIcon = document.getElementById('passwordIcon');
+    
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle icon
+        if (type === 'password') {
+            passwordIcon.classList.remove('fa-eye-slash');
+            passwordIcon.classList.add('fa-eye');
+        } else {
+            passwordIcon.classList.remove('fa-eye');
+            passwordIcon.classList.add('fa-eye-slash');
+        }
+    });
+    
+    // Handle form submission with AJAX
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(loginForm);
+        const data = {
+            username: formData.get('username'),
+            password: formData.get('password')
+        };
+        
+        // Clear previous validation states
+        clearValidation();
+        
+        // Show loading state
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="loading-spinner me-2"></span>Signing In...';
+        submitBtn.disabled = true;
+        
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/';
+                }, 1000);
+            } else {
+                showNotification(data.message, 'error');
+                // Add shake animation to form
+                loginForm.classList.add('shake');
+                setTimeout(() => loginForm.classList.remove('shake'), 500);
+            }
+        })
+        .catch(error => {
+            showNotification('An error occurred. Please try again.', 'error');
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Real-time validation
+    const inputs = loginForm.querySelectorAll('input[required]');
+    inputs.forEach(input => {
+        input.addEventListener('blur', validateField);
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                validateField.call(this);
+            }
+        });
+    });
+});
+
+function validateField() {
+    const value = this.value.trim();
+    const fieldName = this.name;
+    
+    if (!value) {
+        setFieldError(this, `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required`);
+        return false;
+    }
+    
+    if (fieldName === 'username' && value.length < 3) {
+        setFieldError(this, 'Username must be at least 3 characters long');
+        return false;
+    }
+    
+    if (fieldName === 'password' && value.length < 6) {
+        setFieldError(this, 'Password must be at least 6 characters long');
+        return false;
+    }
+    
+    setFieldSuccess(this);
+    return true;
+}
+
+function setFieldError(field, message) {
+    field.classList.remove('is-valid');
+    field.classList.add('is-invalid');
+    const feedback = field.parentNode.querySelector('.invalid-feedback') || 
+                    field.parentNode.parentNode.querySelector('.invalid-feedback');
+    if (feedback) {
+        feedback.textContent = message;
+    }
+}
+
+function setFieldSuccess(field) {
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+}
+
+function clearValidation() {
+    const inputs = document.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.classList.remove('is-valid', 'is-invalid');
+    });
+}
+
+function fillDemoCredentials(username, password) {
+    document.getElementById('username').value = username;
+    document.getElementById('password').value = password;
+    
+    // Add visual feedback
+    const usernameField = document.getElementById('username');
+    const passwordField = document.getElementById('password');
+    
+    usernameField.style.background = 'linear-gradient(90deg, #e8f5e8, transparent)';
+    passwordField.style.background = 'linear-gradient(90deg, #e8f5e8, transparent)';
+    
+    setTimeout(() => {
+        usernameField.style.background = '';
+        passwordField.style.background = '';
+    }, 1000);
+    
+    showNotification(`Demo credentials filled for ${username}`, 'info');
+}
+
+// Add shake animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .shake {
+        animation: shake 0.5s ease-in-out;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
